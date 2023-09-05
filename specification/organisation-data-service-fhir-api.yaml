@@ -2,7 +2,7 @@
 # for organisation-data-service-fhir-api owned by NHS Digital (https://digital.nhs.uk/)
 openapi: '3.0.0'
 info:
-  title: 'organisation-data-service-fhir-api'
+  title: 'organisation-data-service-fhir R4-api'
   version: 'Computed and injected at build time by `scripts/set_version.py`'
   contact:
     name: 'ODS FHIR API Support'
@@ -10,52 +10,73 @@ info:
     email: api.management@nhs.net
   description: |
   
-    <div class="nhsd-m-emphasis-box nhsd-m-emphasis-box--emphasis nhsd-!t-margin-bottom-6" aria-label="Highlighted Information">
-        <div class="nhsd-a-box nhsd-a-box--border-blue">
-            <div class="nhsd-m-emphasis-box__image-box">
-                <figure class="nhsd-a-image">
-                    <picture class="nhsd-a-image__picture">
-                        <img src="http://digital.nhs.uk/binaries/content/gallery/icons/info.svg?colour=231f20" alt="" style="object-fit:fill">
-                    </picture>
-                </figure>
-            </div>
-            <div class="nhsd-m-emphasis-box__content-box">
-            <p class="nhsd-t-heading-s nhsd-t-word-break" id="emphasis-emphasis-30709f1f" data-uipath="website.contentblock.emphasis.heading">Rate limits</p>
-                <div data-uipath="website.contentblock.emphasis.content" class="nhsd-t-word-break"><p class="nhsd-t-body">This API is not designed for high volume usage - to ensure a good level of service you should aim to keep usage below 5 requests per second. For more details, see <a href="https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#rate-limits">rate limits</a>. We are working on increasing the capacity of the API. If you have an exceptional need for higher throughput, <a href="https://digital.nhs.uk/developer/help-and-support">contact us</a> to discuss your options.</p></div>            
-            </div>
-        </div>
-    </div> 
-  
+ 
     ## Overview
-    Use this API to access a reduced dataset of health and social care organisations in England and Wales, such as trusts or GP practices, using the [Organisation Data Service (ODS)](https://digital.nhs.uk/services/organisation-data-service). 
+    Use this API to access a dataset of health and social care organisations in England and Wales, such as trusts or GP practices, using the [Organisation Data Service (ODS)](https://digital.nhs.uk/services/organisation-data-service). 
     
-    This FHIR API contains a reduced dataset, most useful for transactions. To access the full ODS dataset, including data about succession (history) or relationships, use the [ODS ORD API](http://https://digital.nhs.uk/developer/api-catalogue/organisation-data-service-ord).
-    
+    This FHIR API contains the majority of ODS Content, including Organisations, practitioners and geographic information. It contains all the content found within the [ODS ORD API](http://https://digital.nhs.uk/developer/api-catalogue/organisation-data-service-ord).
+
+    An ODS code is a unique identification code for an organisation that interacts with any area of the NHS. For the scope of data coverage of the ODS APIs, see [Organisation Data Service - data coverage](https://digital.nhs.uk/services/organisation-data-service/ods-data-coverage).
+
     You can search for information about an organisation using one or more of their:
     - ODS code
-    - last updated date
+    - last Change date
     - name
     - active or inactive status
-    - postcode or city
-    - organisation's role or primary role, such as trusts or GP practices
+    - address, city or postcode 
+    - organisation's primary role, such as trusts or GP practices
+    - organisation's non-primary role, such as hospice or Integrated Care Board
+    - Related organisations using a Relationship ID such as RE4 (commissioned by) or RE6 (operated by)
+    - presence of Successor or Predecessor information
+    - a selection of geographic values such as Local Authority, Integrated Care BOard or Lower Super Output Area (LSOA)
+
+    You can search for information about a practitioner using one or more of their:
+    - ODS Code
+    - last Change Date
+    - name
+    - active or inactive status
+    - Practitioner Type such as PGP, PNURSE, PHOSPCON
+    - related organisations usine a Membership ID suc as ME1 (GP to Practice) or ME5 (Nurse to Practice)
+
+    You can search for Geographic Information about postcodes using one or more of their:
+    - PostCode
+    - Primary Care Organisations
+    - Government Office Region
+    - Local Authority
+    - Integrated Care Board
+    - NHS England Region
+    - Electoral Ward
+    - Parliamentary Constituency
+    - Lower Super Output Area
+    - Cancer alliance
+    - Strategic Mental Health Provider Collaborative
+
     
     You can also limit the number of results returned, or just request a count of the number of search results.
+
+    This FHIR API makes use of the Organization and OrganizationAffiliation FHIR resources plus range of CodeSystems to deliver the full suite of data, which you will use will depend on your need. 
     
-    You cannot:
-    - access the full dataset from ODS, specifically no information about succession (history) or relationships
-    - search for an organisation using an address
+    This API returns the following dataset of an organisation, when searching the Organization resource with an ODS code:
     
-    An ODS code is a unique identification code for an organisation that interacts with any area of the NHS. For the scope of data coverage of the ODS APIs, see [Organisation Data Service - data coverage](https://digital.nhs.uk/services/organisation-data-service/ods-data-coverage).
-    
-    This API returns the following reduced dataset of an organisation, when searched with an ODS code:
-    
-    - organisation - ODS code, name, open date, close date, last change date and status if active or inactive
-    - address - house or flat number, line 1, line 2, line 3, town, postcode and country
+    - organisation - ODS code, name, Legal open date, Legal close date, Operational open date, Operational Close date, last change date, Recordclass and status if active or inactive
+    - address - house or flat number, line 1, line 2, line 3, town, postcode, Unique Property Reference Number (UPRN) and country
     - contacts - email, website, telephone and fax
     - roles - primary and non-primary roles
+
+    In addition to the Organization resource, an Organization Affilliation resource will returm detailed information about the relationships for an organisation:
+    - Relationship Type
+    - Legal start and end dates
+    - operational start and end dates 
    
-    To access the full ODS dataset, use the [ODS ORD API](https://digital.nhs.uk/developer/api-catalogue/organisation-data-service-ord).
-    
+    To access the full Organistion dataset, use the ods-organization-code CodeSystem, when searching the CodeSystem resource with an ODS Code, in addition to the above, the following will also be returned:
+
+     - Organisation - IsRefOnly a flag to indicate an archived organisation which is referenced by a current organisation, assigningAuthority
+     - related entities, the current related entity of any supported relationships
+     - Succession - any Predecessors, Successors and a flagg to indicate onward succession
+     - Geographic - the appropriate mapping from the postcode dataset including  Local Authority, Integrated Care BOard or Lower Super Output Area (LSOA)
+
+
+
     <section class="nhsd-m-emphasis-box nhsd-m-emphasis-box--important nhsd-!t-margin-bottom-6" aria-label="Important Information">
         <div class="nhsd-a-box nhsd-a-box--border-yellow">
                 <div class="nhsd-m-emphasis-box__image-box">
@@ -70,12 +91,21 @@ info:
             </div>
         </div>
     </section>
+
+    In Addition to the ods-organisation-code CodeSystem, there are also CodeSystems for:
+
+    - Practitioner - includes details about related organisation and type
+    - Postcode - contains various geographic values for a postcode includeing, Lower Super Output Area, Parliamentary Constituency, Local Authority and Integrated Care Board
+    - OrganizationRelationship - 
+    - PrescriberRelationship
     
+
+
     ## Who can use this API
     This API can only be used to support the delivery of health and social care.
     
     ## Related APIs
-    The following API also gives access to the Organisation Data Service:
+    [needs editing]The following API also gives access to the Organisation Data Service:
     - [ODS Organisation Reference Data (ORD) API](https://digital.nhs.uk/developer/api-catalogue/organisation-data-service-ord) - use this API to access the full ODS dataset
     
     The following API is also related to this API:
@@ -96,7 +126,7 @@ info:
     ## Technology
     This API is [RESTful](https://digital.nhs.uk/developer/guides-and-documentation/our-api-technologies#basic-rest).
     
-    It also conforms to the [FHIR](https://digital.nhs.uk/developer/guides-and-documentation/our-api-technologies#fhir) global standard for health care data exchange. Specifically, it is based on the HL7 FHIR STU3 Messaging Implementation.
+    It also conforms to the [FHIR](https://digital.nhs.uk/developer/guides-and-documentation/our-api-technologies#fhir) global standard for health care data exchange. Specifically, it is based on the UK Core FHIR R4 Messaging Implementation.
     
     You do not need to know much about FHIR to use this API - FHIR APIs are just RESTful APIs that follow specific rules. In particular:
     - resource names are capitalised, singular and in American English, for example `/Organization` not `/organisations`
@@ -109,7 +139,7 @@ info:
     This API is available on the internet and, indirectly, on the [Health and Social Care Network (HSCN)](https://digital.nhs.uk/services/health-and-social-care-network).
     
     ## Security and authorisation
-    This API is [open-access](https://digital.nhs.uk/developer/guides-and-documentation/security-and-authorisation#open-access-apis), which means:
+    [needs editing]This API is [open-access](https://digital.nhs.uk/developer/guides-and-documentation/security-and-authorisation#open-access-apis), which means:
     - we do not authenticate or authorise the calling application
     - we do not authenticate or authorise the end user - they might not even be present
     
